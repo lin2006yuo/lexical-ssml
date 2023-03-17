@@ -96,8 +96,6 @@ import {
 export type SerializedHeadingNode = Spread<
   {
     tag: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-    type: 'heading';
-    version: 1;
   },
   SerializedElementNode
 >;
@@ -106,13 +104,7 @@ export const DRAG_DROP_PASTE: LexicalCommand<Array<File>> = createCommand(
   'DRAG_DROP_PASTE_FILE',
 );
 
-export type SerializedQuoteNode = Spread<
-  {
-    type: 'quote';
-    version: 1;
-  },
-  SerializedElementNode
->;
+export type SerializedQuoteNode = SerializedElementNode;
 
 /** @noInheritDoc */
 export class QuoteNode extends ElementNode {

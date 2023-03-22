@@ -9,13 +9,14 @@
 
 import type {CreateEditorArgs, LexicalEditor} from 'lexical';
 
-import {createEditor} from 'lexical';
+import {createEditor, LexicalHeadlessFrontendAdapter} from 'lexical';
 
 export function createHeadlessEditor(
   editorConfig?: CreateEditorArgs,
 ): LexicalEditor {
-  const editor = createEditor(editorConfig);
-  editor._headless = true;
+  const config = editorConfig || {};
+  config.frontendAdapter = new LexicalHeadlessFrontendAdapter();
+  const editor = createEditor(config);
 
   const unsupportedMethods = [
     'registerDecoratorListener',

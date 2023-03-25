@@ -172,6 +172,8 @@
   },
   "dependencies": {
     "@types/katex": "^0.14.0",
+    "@types/mockjs": "^1.0.7",
+    "mockjs": "^1.1.0",
     "yjs": "^13.5.42"
   },
   "size-limit": [

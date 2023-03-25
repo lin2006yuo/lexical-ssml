@@ -1,0 +1,21 @@
+.minutes-paragraph-content {
+    margin-top: -4px;
+    margin-left: 36px;
+    border: 1px solid #f1f2f3;
+
+
+}
+
+.minutes-paragraph-content p {
+    display: inline;
+}
+
+.minutes-paragraph-content p[contenteditable='true'] {
+    border-bottom: 1px solid #3370ff;
+
+}
+
+.minutes-paragraph-content p.active {
+    border-bottom: 1px solid #3370ff;
+
+}

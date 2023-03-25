@@ -6,23 +6,26 @@
  *
  */
 
-import {$createLinkNode} from '@lexical/link';
-import {$createListItemNode, $createListNode} from '@lexical/list';
-import {LexicalComposer} from '@lexical/react/LexicalComposer';
-import {$createHeadingNode, $createQuoteNode} from '@lexical/rich-text';
-import {$createParagraphNode, $createTextNode, $getRoot} from 'lexical';
+import { $createLinkNode } from '@lexical/link';
+import { $createListItemNode, $createListNode } from '@lexical/list';
+import { LexicalComposer } from '@lexical/react/LexicalComposer';
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import { $createHeadingNode, $createQuoteNode } from '@lexical/rich-text';
+import { $createParagraphNode, $createTextNode, $getRoot } from 'lexical';
 import * as React from 'react';
 
-import {isDevPlayground} from './appSettings';
-import {SettingsContext, useSettings} from './context/SettingsContext';
-import {SharedAutocompleteContext} from './context/SharedAutocompleteContext';
-import {SharedHistoryContext} from './context/SharedHistoryContext';
+import { isDevPlayground } from './appSettings';
+import { SettingsContext, useSettings } from './context/SettingsContext';
+import { SharedAutocompleteContext } from './context/SharedAutocompleteContext';
+import { SharedHistoryContext } from './context/SharedHistoryContext';
 import Editor from './Editor';
 import logo from './images/logo.svg';
+import { INSERT_HUNDRED_MINUTES_PARAGRAPH_COMMAND, INSERT_MINUTES_PARAGRAPH_COMMAND } from './nodes/minutes-paragraph';
 import PlaygroundNodes from './nodes/PlaygroundNodes';
+import { $createSSMLParagraphNode } from './nodes/ssml/nodes/ssml-paragraph';
 import DocsPlugin from './plugins/DocsPlugin';
 import PasteLogPlugin from './plugins/PasteLogPlugin';
-import {TableContext} from './plugins/TablePlugin';
+import { TableContext } from './plugins/TablePlugin';
 import TestRecorderPlugin from './plugins/TestRecorderPlugin';
 import TypingPerfPlugin from './plugins/TypingPerfPlugin';
 import Settings from './Settings';
@@ -31,6 +34,12 @@ import PlaygroundEditorTheme from './themes/PlaygroundEditorTheme';
 console.warn(
   'If you are profiling the playground app, please ensure you turn off the debug view. You can disable it by pressing on the settings control in the bottom-left of your screen and toggling the debug view setting.',
 );
+
+function prepopulatedSSML() {
+  const root = $getRoot()
+  const SSMLParagraph = $createSSMLParagraphNode()
+  root.append(SSMLParagraph)
+}
 
 function prepopulatedRichText() {
   const root = $getRoot();
@@ -42,7 +51,7 @@ function prepopulatedRichText() {
     quote.append(
       $createTextNode(
         `In case you were wondering what the black box at the bottom is – it's the debug view, showing the current state of the editor. ` +
-          `You can disable it by pressing on the settings control in the bottom-left of your screen and toggling the debug view setting.`,
+        `You can disable it by pressing on the settings control in the bottom-left of your screen and toggling the debug view setting.`,
       ),
     );
     root.append(quote);
@@ -114,15 +123,15 @@ function prepopulatedRichText() {
 
 function App(): JSX.Element {
   const {
-    settings: {isCollab, emptyEditor, measureTypingPerf},
+    settings: { isCollab, emptyEditor, measureTypingPerf },
   } = useSettings();
 
   const initialConfig = {
     editorState: isCollab
       ? null
       : emptyEditor
-      ? undefined
-      : prepopulatedRichText,
+        ? undefined
+        : prepopulatedSSML,
     namespace: 'Playground',
     nodes: [...PlaygroundNodes],
     onError: (error: Error) => {
@@ -156,6 +165,9 @@ function App(): JSX.Element {
     </LexicalComposer>
   );
 }
+
+
+
 
 export default function PlaygroundApp(): JSX.Element {
   return (

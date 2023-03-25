@@ -1,0 +1,24 @@
+.ssml-paragraph {
+    display: flex;
+}
+
+.ssml-paragraph-textarea {
+    width: 100%;
+}
+
+.ssml-paragraph-preview {
+    width: 30px;
+    background: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.ssml-preview-icon {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #000;
+
+    user-select: none;
+}

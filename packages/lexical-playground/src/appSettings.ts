@@ -29,13 +29,13 @@ export const isDevPlayground: boolean =
 
 export const DEFAULT_SETTINGS: Settings = {
   disableBeforeInput: false,
-  emptyEditor: isDevPlayground,
+  emptyEditor: false,
   isAutocomplete: false,
   isCharLimit: false,
   isCharLimitUtf8: false,
   isCollab: false,
   isMaxLength: false,
-  isRichText: true,
+  isRichText: false,
   measureTypingPerf: false,
   showNestedEditorTreeView: false,
   showTableOfContents: false,

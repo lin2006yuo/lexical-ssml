@@ -7,7 +7,7 @@
  *
  */
 
-import { $getRoot, CommandPayloadType, createCommand, LexicalEditor } from 'lexical';
+import { $createTextNode, $getNodeByKey, $getRoot, $insertNodes, $isTextNode, $setCompositionKey, CommandPayloadType, createCommand, ElementNode, LexicalEditor, LexicalNode, TextFormatType, TextNode } from 'lexical';
 
 import {
   $getHtmlContent,
@@ -47,9 +47,13 @@ import {
   IS_SAFARI,
 } from 'shared/environment';
 import { $createSSMLParagraphNode } from './nodes/ssml-paragraph';
+import { $createSSMLPauseNode } from './nodes/ssml-pause-node';
+import { $createSSMLMuteNode } from './nodes/ssml-mute-node';
 
 export const INSERT_SSML_PARAGRAPH_COMMAND = createCommand<void>();
 export const SET_CUSTOM_SELECTION = createCommand()
+export const INSERT_SSML_PAUSE_COMMAND = createCommand()
+export const MUTE_SSML_COMMAND = createCommand()
 
 
 function onCopyForPlainText(
@@ -111,8 +115,234 @@ function onCutForPlainText(
   });
 }
 
+function formatMuteSSML(editor: LexicalEditor, formatType: TextFormatType) {
+  editor.update(() => {
+    const selection = $getSelection();
+
+    if (!$isRangeSelection(selection)) {
+      return false;
+    }
+
+    selection.isCollapsed()
+
+    if (selection.isCollapsed()) {
+      return;
+    }
+
+    const selectedNodes = selection.getNodes();
+    const selectedTextNodes: Array<TextNode> = [];
+    for (const selectedNode of selectedNodes) {
+      if ($isTextNode(selectedNode)) {
+        selectedTextNodes.push(selectedNode);
+      }
+    }
+
+    const selectedTextNodesLength = selectedTextNodes.length;
+    if (selectedTextNodesLength === 0) {
+      selection.toggleFormat(formatType);
+      // When changing format, we should stop composition
+      $setCompositionKey(null);
+      return;
+    }
+
+    const anchor = selection.anchor;
+    const focus = selection.focus;
+    const isBackward = selection.isBackward();
+    const startPoint = isBackward ? focus : anchor;
+    const endPoint = isBackward ? anchor : focus;
+
+    let firstIndex = 0;
+    let firstNode = selectedTextNodes[0];
+    let startOffset = startPoint.type === 'element' ? 0 : startPoint.offset;
+
+    // In case selection started at the end of text node use next text node
+    if (
+      startPoint.type === 'text' &&
+      startOffset === firstNode.getTextContentSize()
+    ) {
+      firstIndex = 1;
+      firstNode = selectedTextNodes[1];
+      startOffset = 0;
+    }
+
+    if (firstNode == null) {
+      return;
+    }
+
+    const firstNextFormat = firstNode.getFormatFlags(formatType, null);
+
+    const lastIndex = selectedTextNodesLength - 1;
+    let lastNode = selectedTextNodes[lastIndex];
+    const endOffset =
+      endPoint.type === 'text'
+        ? endPoint.offset
+        : lastNode.getTextContentSize();
+
+    // Single node selected
+    if (firstNode.is(lastNode)) {
+      // No actual text is selected, so do nothing.
+      if (startOffset === endOffset) {
+        return;
+      }
+      // The entire node is selected, so just format it
+      if (startOffset === 0 && endOffset === firstNode.getTextContentSize()) {
+        const parent = firstNode.getParent()!
+        const muteNode = $createSSMLMuteNode(firstNode.getTextContent())
+        firstNode.replace(muteNode)
+        mergeSameTypeNodeTextContent(editor, parent)
+      } else {
+        // Node is partially selected, so split it into two nodes
+        // add style the selected one.
+        const parent = firstNode.getParent()!
+        const splitNodes = firstNode.splitText(startOffset, endOffset);
+        const replacement = startOffset === 0 ? splitNodes[0] : splitNodes[1];
+        // const firstParant = firstNode.getParent()
+
+        let muteNode: TextNode
+        muteNode = $createSSMLMuteNode(replacement.getTextContent())
+        replacement.replace(muteNode)
+
+        muteNode.select()
+        // Update selection only if starts/ends on text node
+        // if (startPoint.type === 'text') {
+        //   startPoint.set(muteNode.__key, endOffset - startOffset, 'text');
+        // }
+        // if (endPoint.type === 'text') {
+        //   endPoint.set(muteNode.__key, endOffset - startOffset, 'text');
+        // }
+
+        mergeSameTypeNodeTextContent(editor, parent)
+      }
+
+      // this.format = firstNextFormat;
+
+      return;
+    }
+    // Multiple nodes selected
+    // The entire first node isn't selected, so split it
+    if (startOffset !== 0) {
+      [, firstNode as TextNode] = firstNode.splitText(startOffset);
+      const parentNode = firstNode.getParent()!
+      const muteNode = $createSSMLMuteNode(firstNode.getTextContent())
+      firstNode.replace(muteNode)
+      startOffset = 0;
+    }
+    // firstNode.setFormat(firstNextFormat);
+
+    // const lastNextFormat = lastNode.getFormatFlags(formatType, firstNextFormat);
+    // If the offset is 0, it means no actual characters are selected,
+    // so we skip formatting the last node altogether.
+    if (endOffset > 0) {
+      if (endOffset !== lastNode.getTextContentSize()) {
+        [lastNode as TextNode] = lastNode.splitText(endOffset);
+      }
+
+      const muteNode = $createSSMLMuteNode(lastNode.getTextContent())
+      lastNode.replace(muteNode)
+
+      muteNode.select()
+      // lastNode.setFormat(lastNextFormat);
+    }
+
+    // Process all text nodes in between
+    for (let i = firstIndex + 1; i < lastIndex; i++) {
+      const textNode = selectedTextNodes[i];
+      if (!textNode.isToken()) {
+        // const nextFormat = textNode.getFormatFlags(formatType, lastNextFormat);
+        const muteNode = $createSSMLMuteNode(textNode.getTextContent())
+        textNode.replace(muteNode)
+      }
+    }
+
+
+    // Update selection only if starts/ends on text node
+    // if (startPoint.type === 'text') {
+    //   startPoint.set(firstNode.__key, startOffset, 'text');
+    // }
+    // if (endPoint.type === 'text') {
+    //   endPoint.set(lastNode.__key, endOffset, 'text');
+    // }
+
+    const paragraphNode = new Set<string>()
+    selectedTextNodes.forEach((n) => {
+      const parentKey = n.__parent;
+      if (parentKey) {
+        paragraphNode.add(parentKey)
+      }
+    })
+    paragraphNode.forEach(key => {
+      const node = $getNodeByKey(key) as ElementNode
+      mergeSameTypeNodeTextContent(editor, node)
+    })
+
+    // this.format = firstNextFormat | lastNextFormat;
+  })
+}
+
+// 合并子节点中连续相同type节点的 text 内容
+function mergeSameTypeNodeTextContent(editor: LexicalEditor, parent: ElementNode) {
+  const children = parent.getChildren()
+  const stack: LexicalNode[] = []
+  for (let index = 0; index < children.length; index++) {
+    const child = children[index];
+    if (stack.length === 0 || stack[stack.length - 1].getType() !== child.getType()) {
+      stack.push(child)
+    } else {
+      // 相邻节点 type 类型相同
+      // 合并 text 内容
+      const lastNode = stack[stack.length - 1]
+      if ($isTextNode(lastNode)) {
+        if ($isTextNode(child)) {
+          lastNode.setTextContent(lastNode.getTextContent() + child.getTextContent())
+          child.remove()
+        } else {
+          throw Error('mergeSameTypeNodeTextContent: child is not text node')
+        }
+      } else {
+        throw Error('mergeSameTypeNodeTextContent: lastNode is not text node')
+      }
+    }
+  }
+}
+
 export function registerPlainText(editor: LexicalEditor): () => void {
+  window.__ed = editor
   const removeListener = mergeRegister(
+    // ssml： 添加停顿
+    editor.registerCommand(
+      MUTE_SSML_COMMAND,
+      () => {
+        const selection = $getSelection();
+
+        if (!$isRangeSelection(selection)) {
+          return false;
+        }
+
+        formatMuteSSML(editor, 'bold')
+
+        return true
+      },
+      COMMAND_PRIORITY_EDITOR
+    ),
+    // ssml： 添加停顿
+    editor.registerCommand(
+      INSERT_SSML_PAUSE_COMMAND,
+      () => {
+        const selection = $getSelection();
+
+        if (!$isRangeSelection(selection)) {
+          return false;
+        }
+
+        const ssmlPauseNode = $createSSMLPauseNode()
+
+        $insertNodes([ssmlPauseNode])
+
+        return true
+      },
+      COMMAND_PRIORITY_EDITOR
+    ),
+    // 测试：插入 ssml 片段
     editor.registerCommand(
       INSERT_SSML_PARAGRAPH_COMMAND,
       () => {
@@ -147,14 +377,14 @@ export function registerPlainText(editor: LexicalEditor): () => void {
       SET_CUSTOM_SELECTION,
       () => {
         const selection = $getSelection()
-    
-        if($isRangeSelection(selection)) {
+
+        if ($isRangeSelection(selection)) {
           const anchor = selection.anchor
           const focus = selection.focus
-          anchor.set("5", 1, 'text');
-          focus.set("5", 1, 'text');
+          anchor.set("14", 1, 'text');
+          focus.set("14", 1, 'text');
         }
-  
+
         return true;
       },
       COMMAND_PRIORITY_EDITOR

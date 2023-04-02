@@ -22,7 +22,7 @@ import Editor from './Editor';
 import logo from './images/logo.svg';
 import { INSERT_HUNDRED_MINUTES_PARAGRAPH_COMMAND, INSERT_MINUTES_PARAGRAPH_COMMAND } from './nodes/minutes-paragraph';
 import PlaygroundNodes from './nodes/PlaygroundNodes';
-import { $createSSMLParagraphNode } from './nodes/ssml/nodes/ssml-paragraph';
+import { $createSSMLParagraphList, $createSSMLParagraphNode } from './nodes/ssml/nodes/ssml-paragraph';
 import DocsPlugin from './plugins/DocsPlugin';
 import PasteLogPlugin from './plugins/PasteLogPlugin';
 import { TableContext } from './plugins/TablePlugin';
@@ -37,8 +37,9 @@ console.warn(
 
 function prepopulatedSSML() {
   const root = $getRoot()
-  const SSMLParagraph = $createSSMLParagraphNode()
-  root.append(SSMLParagraph)
+  const ssmlParagraphList = $createSSMLParagraphList();
+  ssmlParagraphList.append($createSSMLParagraphNode())
+  root.append(ssmlParagraphList)
 }
 
 function prepopulatedRichText() {

@@ -27,15 +27,18 @@ export const isDevPlayground: boolean =
   hostName !== 'playground.lexical.dev' &&
   hostName !== 'lexical-playground.vercel.app';
 
+
+const ssml = true
+
 export const DEFAULT_SETTINGS: Settings = {
   disableBeforeInput: false,
-  emptyEditor: false,
+  emptyEditor: !ssml,
   isAutocomplete: false,
   isCharLimit: false,
   isCharLimitUtf8: false,
   isCollab: false,
   isMaxLength: false,
-  isRichText: false,
+  isRichText: !ssml,
   measureTypingPerf: false,
   showNestedEditorTreeView: false,
   showTableOfContents: false,

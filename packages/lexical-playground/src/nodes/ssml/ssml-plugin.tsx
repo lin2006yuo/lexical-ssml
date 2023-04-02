@@ -6,13 +6,16 @@
  *
  */
 
-import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import useLexicalEditable from '@lexical/react/useLexicalEditable';
 import * as React from 'react';
 
-import {ErrorBoundaryType, useDecorators} from './useDecorators';
-import {usePlainTextSetup} from './usePlainTextSetup';
+import { ErrorBoundaryType, useDecorators } from './useDecorators';
+import { usePlainTextSetup } from './usePlainTextSetup';
 import { useCanShowPlaceholder } from './useCanShowPlaceholder';
+import Toolbar from './toolbar';
+
+const anchorEle = document.querySelector('.ssml-editor')! as HTMLDivElement
 
 export function SSMLPlugin({
   contentEditable,
@@ -21,9 +24,9 @@ export function SSMLPlugin({
 }: {
   contentEditable: JSX.Element;
   placeholder:
-    | ((isEditable: boolean) => null | JSX.Element)
-    | null
-    | JSX.Element;
+  | ((isEditable: boolean) => null | JSX.Element)
+  | null
+  | JSX.Element;
   ErrorBoundary: ErrorBoundaryType;
 }): JSX.Element {
   const [editor] = useLexicalComposerContext();
@@ -32,7 +35,10 @@ export function SSMLPlugin({
 
   return (
     <>
-      {contentEditable}
+      <div className='ssml-editor'>
+        {contentEditable}
+      </div>
+      <Toolbar anchorEle={anchorEle} />
       <Placeholder content={placeholder} />
       {decorators}
     </>

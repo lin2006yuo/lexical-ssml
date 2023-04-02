@@ -35,7 +35,9 @@ import { TableNode as NewTableNode } from './TableNode';
 import { TweetNode } from './TweetNode';
 import { MinutesParagraphContainerNode, MinutesParagraphContentNode, MinutesParagraphTitleNode, MinutesSentenceNode, MinutesTextNode } from './minutes-paragraph';
 import { YouTubeNode } from './YouTubeNode';
-import { SSMLParagraph, SSMLParagraphPreviewNode, SSMLParagraphTextarea } from './ssml/nodes/ssml-paragraph';
+import { SSMLParagraph, SSMLParagraphList, SSMLParagraphPreviewNode, SSMLParagraphTextarea } from './ssml/nodes/ssml-paragraph';
+import { SSMLPauseNode } from './ssml/nodes/ssml-pause-node';
+import { SSMLMuteNode } from './ssml/nodes/ssml-mute-node';
 
 const PlaygroundNodes: Array<Klass<LexicalNode>> = [
   HeadingNode,
@@ -77,9 +79,13 @@ const PlaygroundNodes: Array<Klass<LexicalNode>> = [
   MinutesSentenceNode,
   MinutesTextNode,
 
+  SSMLParagraphList,
   SSMLParagraph,
   SSMLParagraphPreviewNode,
-  SSMLParagraphTextarea
+  SSMLParagraphTextarea,
+
+  SSMLPauseNode,
+  SSMLMuteNode
 ];
 
 export default PlaygroundNodes;

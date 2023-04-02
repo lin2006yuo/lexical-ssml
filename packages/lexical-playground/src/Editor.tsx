@@ -30,7 +30,7 @@ import { useSettings } from './context/SettingsContext';
 import { useSharedHistoryContext } from './context/SharedHistoryContext';
 import { INSERT_MINUTES_PARAGRAPH_COMMAND, MinutesParagraphPlugin } from './nodes/minutes-paragraph';
 import { SSMLPlugin } from './nodes/ssml/ssml-plugin';
-import { INSERT_SSML_PARAGRAPH_COMMAND, SET_CUSTOM_SELECTION } from './nodes/ssml/ssml-plugin-stepup';
+import { INSERT_SSML_PARAGRAPH_COMMAND, INSERT_SSML_PAUSE_COMMAND, MUTE_SSML_COMMAND, SET_CUSTOM_SELECTION } from './nodes/ssml/ssml-plugin-stepup';
 import TableCellNodes from './nodes/TableCellNodes';
 import ActionsPlugin from './plugins/ActionsPlugin';
 import AutocompletePlugin from './plugins/AutocompletePlugin';
@@ -215,6 +215,9 @@ export default function Editor(): JSX.Element {
             <TabFocusPlugin />
             <TabIndentationPlugin />
             <CollapsiblePlugin />
+            {
+              console.log(floatingAnchorElem)
+            }
             {floatingAnchorElem && !isSmallWidthViewport && (
               <>
                 <DraggableBlockPlugin anchorElem={floatingAnchorElem} />
@@ -232,6 +235,8 @@ export default function Editor(): JSX.Element {
           </>
         ) : (
           <>
+            <ToolbarPause />
+            <ToolbarMute />
             <SSMLPlugin
               contentEditable={<ContentEditable />}
               placeholder={placeholder}
@@ -291,4 +296,27 @@ const ToolbarHundredSelection: React.FC = () => {
   };
 
   return <button onClick={() => insertMinutesParagraph()}>SET SELECTION</button>;
+};
+
+const ToolbarPause: React.FC = () => {
+  const [editor] = useLexicalComposerContext();
+  const handleInsertPause = () => {
+    // Executing command defined in a plugin
+
+    editor.dispatchCommand(INSERT_SSML_PAUSE_COMMAND, undefined);
+  };
+
+  return <button onClick={() => handleInsertPause()}>添加停顿</button>;
+};
+
+
+const ToolbarMute: React.FC = () => {
+  const [editor] = useLexicalComposerContext();
+  const handleInsertPause = () => {
+    // Executing command defined in a plugin
+
+    editor.dispatchCommand(MUTE_SSML_COMMAND, undefined);
+  };
+
+  return <button onClick={() => handleInsertPause()}>停止诵读</button>;
 };

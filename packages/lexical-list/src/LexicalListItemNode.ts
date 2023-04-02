@@ -215,9 +215,9 @@ export class ListItemNode extends ElementNode {
       const after = super.insertAfter(node, restoreSelection);
       const afterListNode = node.getParentOrThrow();
 
-      if ($isListNode(afterListNode)) {
-        updateChildrenListItemValue(afterListNode);
-      }
+      // if ($isListNode(afterListNode)) {
+      //   updateChildrenListItemValue(afterListNode);
+      // }
 
       return after;
     }

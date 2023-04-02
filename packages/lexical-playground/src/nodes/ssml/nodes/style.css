@@ -1,11 +1,16 @@
 .ssml-paragraph {
     display: flex;
+    background-color: #f7f7f7;
+    margin: 4px 0;
 }
 
 .ssml-paragraph-textarea {
     width: 100%;
 }
 
+
+
+/* --------------- 预览 -------------------- */
 .ssml-paragraph-preview {
     width: 30px;
     background: #fff;
@@ -13,7 +18,14 @@
     justify-content: center;
     align-items: center;
 }
-
+.ssml-preview-node {
+    width: 30px;
+    cursor: pointer;
+    background: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 .ssml-preview-icon {
     width: 5px;
     height: 5px;
@@ -21,4 +33,25 @@
     background: #000;
 
     user-select: none;
+}
+
+/* --------------- ssml 停顿 -------------------- */
+.ssml-pause-node {
+    display: inline-block;
+    justify-content: center;
+    align-items: center;
+    padding: 0px 0 0px;
+}
+.ssml-pause-icon {
+    width: 6px;
+    height: 12px;
+    background: #358411;
+    display: inline-block;
+    margin: 0 5px;
+    cursor: pointer;
+}
+
+/* --------------- 停顿 -------------------- */
+.ssml-mute-node {
+    background-color: orange;
 }
